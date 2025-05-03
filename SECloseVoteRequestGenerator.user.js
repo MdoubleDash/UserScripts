@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name          _Stack Exchange CV Request Generator
+// @name           Stack Exchange CV Request Generator
 // @namespace      https://github.com/SO-Close-Vote-Reviewers/
 // @version        2.1.0
 // @description    This script generates formatted close-/delete-/reopen-/undelete-vote requests, spam/offensive flag requests, Smoke Detector reports, and approve-/reject-pls requests for suggested edits, then sends them to a specified chat room.
