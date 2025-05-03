@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name           Stack Exchange CV Request Generator
+// @name           _Stack Exchange CV Request Generator
 // @namespace      https://github.com/SO-Close-Vote-Reviewers/
-// @version        2.0.4
+// @version        2.1.0
 // @description    This script generates formatted close-/delete-/reopen-/undelete-vote requests, spam/offensive flag requests, Smoke Detector reports, and approve-/reject-pls requests for suggested edits, then sends them to a specified chat room.
 // @author         @TinyGiant @Makyen
 // @contributor    @rene @Tunaki
@@ -1000,6 +1000,14 @@
             callback = function() {}; // eslint-disable-line no-empty-function
         }
         RoomList.getRoom(function(room) {
+            //Overriding the target room if a temporary room is slected
+            var overrideId = $('#cvrgTempTargetRoom').val();
+            if (overrideId) {
+                RoomList.each(function(r){
+                    if (r.id === overrideId) {
+                    room = r;
+                }});
+            }
             function displayRequestText(requestText, message) {
                 message += '' +
                     '<br/><br/>' +
@@ -1736,6 +1744,10 @@
         '        opacity: .4;' +
         '        pointer-events: none;' +
         '    }' +
+        '    .cvrgTempRoomSelect {' +
+        '        margin-left: 5px;' +
+        '        margin-top: 10px;' +
+        '    }' +
         '    .cvrgCVPopupSDAndNatoWithFake {' +
         '        display: inline-block;' +
         '        position: relative;' +
@@ -1813,6 +1825,10 @@
             '                        NATO' +
             '                    </label>' +
             '                </div>' +
+           	'                   <div class="cvrgTempRoom">' +
+            '                       Temporary Target Room: ' +
+            '                       <select id="cvrgTempTargetRoom"></select>' + //To change the target room for the current request
+            '                   </div>' +
             '            </div>' +
             '            <span class="cvrgDelayLengthSpan" style="display:none;">' +
             '                <span class="cvrgDelayInputGroup">' +
@@ -1882,6 +1898,17 @@
             thisGuiItem.userChangedRequestType = true;
             thisGuiItem.adjustDisplayToRequestReason();
         });
+        //Populate temporary target room list
+        var tempTargetRoomSelect = item.find('#cvrgTempTargetRoom');
+        RoomList.each(function(room){
+            tempTargetRoomSelect.append(
+                $('<option>')
+                .val(room.id)
+                .text(room.name)
+            );
+        });
+        var currentDefaultRoom = getCurrentRoom();
+        tempTargetRoomSelect.val(currentDefaultRoom);
         function addTextToReasonIfNotPresentAndCheckboxChecked(checkbox, textRegex, addText) {
             const originalReason = requestReasonInput.val();
             textRegex.lastIndex = 0;
@@ -4153,6 +4180,18 @@
         var cvrgCheckboxWrapper = $('<div class="cvrgCVPopupCheckboxWrapper"></div>').append(cvplsCheckbox);
         var andWasWrapper = $(' <span class="cvrgCVPopupAndWasWrapper" disabled="true"> & was:<div class="cvrgCVPopupSDAndNatoWithFake"><div class="cvrgCVPopupFakeSDReportCheckboxwrapper"><label class=""><input class="" type="checkbox">SD report</label></div><div class="cvrgCVPopupSDAndNato"><label class="cvrgCVPopupIsSDReportCheckboxLabel" title="This will add &quot;(SD report)&quot; to the report reason."><input class="cvrgCVPopupIsSDReportCheckbox" type="checkbox">SD report</label><label class="cvrgCVPopupIsNatoCheckboxLabel" title="This will add &quot;(NATO)&quot; to the report reason."><input class="cvrgCVPopupIsNatoCheckbox" type="checkbox">NATO</label></div></div></span>');
         cvrgCheckboxWrapper.append(andWasWrapper)
+        //Dropdown to temporarily change the target room
+        var tempTargetRoomSelect = $('<select id="cvrgTempTargetRoom" class="cvrgTempRoomSelect"></select>');
+        RoomList.each(function(room){
+            tempTargetRoomSelect.append(
+                $('<option>')
+                .val(room.id)
+                .text(room.name)
+            );
+        });
+        var currentDefaultRoom = getCurrentRoom();
+        $('#cvrgTempTargetRoom').val(currentDefaultRoom);
+        cvrgCheckboxWrapper.append(tempTargetRoomSelect);
         if (remainingVotes.length) {
             remainingVotes.before(cvrgCheckboxWrapper);
         } else {
